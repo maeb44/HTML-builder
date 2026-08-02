@@ -15,34 +15,34 @@ const path = require('path');
 // 	return null;
 // }
 
-async function copyFolder() {
-	const folderPath = path.join(__dirname,'files');
-	const copyFolderPath = path.join(__dirname,'files-copy')
-	
-	try{
-		await fs.access(copyFolderPath)
-		console.log('Папка существует, добавляем файлы')
-	}	catch(err){
-		await fs.mkdir(copyFolderPath)
-		console.log('Создаём папку-копию и добавляем файлы')
-	}
+async function copyFolder(src,dist) {
+		const folderPath = src;
+		const copyFolderPath = dist;
+
+		await fs.mkdir(copyFolderPath,{recursive:true})
+
 
 	const copyFiles = await fs.readdir(copyFolderPath)
-	const files = await fs.readdir(folderPath)
+	const files = await fs.readdir(folderPath,{withFileTypes:true})
 	
 	for(let file of files){
-		const filePath = path.join(folderPath,file)
-		const copyFilePath = path.join(copyFolderPath,file)
+		if(file.isDirectory()){
+			const srcPath = path.join(src,file.name)
+			const distPath = path.join(dist,file.name)
+			copyFolder(srcPath,distPath)
+			continue;
+		}
+		const filePath = path.join(folderPath,file.name)
+		const copyFilePath = path.join(copyFolderPath,file.name)
 		await fs.copyFile(filePath,copyFilePath)
 	}
-	console.log('файлы скопированы!')
-	await deleteExtraFile();
+	await deleteExtraFile(src,dist)
 }
 
-async function deleteExtraFile() {
+async function deleteExtraFile(src,dist) {
 	let logomes = false
-	const folderPath = path.join(__dirname,'files');
-	const copyFolderPath = path.join(__dirname,'files-copy')
+	const folderPath = src;
+	const copyFolderPath = dist;
 	
 	const copyFiles = await fs.readdir(copyFolderPath)
 	const files = await fs.readdir(folderPath)
@@ -65,5 +65,8 @@ async function deleteExtraFile() {
 
 
 (async () =>{
-	await copyFolder();
+	const src = path.join(__dirname,'files')
+	const dist = path.join(__dirname,'files-copy')
+
+	await copyFolder(src,dist);
 })()
