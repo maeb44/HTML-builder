@@ -8,7 +8,8 @@ const bundle = path.join(projectDir,'bundle.css');
 
 
 
-async function copyStyles (){
+async function copyStyles (extname){
+
 	try{
 		await fs.access(bundle)
 		await fs.writeFile(bundle,'','utf-8')
@@ -19,7 +20,7 @@ async function copyStyles (){
 
 	const styles = await fs.readdir(stylesDir,{withFileTypes:true})
 	for(let file of styles){
-		if(path.extname(file.name)==='.css'){
+		if(path.extname(file.name) === extname){
 			console.log(`${file.name} в процессе мерджа`)
 			const fileDir = path.join(stylesDir,file.name)
 			const fileContent = await fs.readFile(fileDir,'utf-8')
