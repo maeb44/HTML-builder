@@ -1,49 +1,40 @@
-const { error, Console } = require('console');
-const fs = require ('fs/promises');
+const fs = require('fs/promises');
 const path = require('path');
 
+async function copyFolder(src, dist) {
+  await fs.mkdir(dist, { recursive: true });
 
-async function copyFolder(src,dist) {
+  const copyFiles = await fs.readdir(dist, { withFileTypes: true });
+  const files = await fs.readdir(src, { withFileTypes: true });
 
-	await fs.mkdir(dist,{recursive:true})
+  for (let e of copyFiles) {
+    if (!files.includes(e)) {
+      const deleteFilePath = path.join(dist, e.name);
+      if (e.isDirectory()) {
+        await fs.rm(deleteFilePath, { recursive: true, force: true });
+      } else {
+        await fs.unlink(deleteFilePath);
+      }
+    }
+  }
 
-	
-
-	const copyFiles = await fs.readdir(dist,{withFileTypes:true})
-	const files = await fs.readdir(src,{withFileTypes:true})
-	
-	for(let e of copyFiles){
-		if(!files.includes(e)){
-				const deleteFilePath = path.join(dist,e.name)
-			if(e.isDirectory()) {
-				await fs.rm(deleteFilePath,{recursive:true,force:true})
-			}
-			else{
-			await fs.unlink(deleteFilePath)
-		}
-		}
-	}
-
-	for(let file of files){
-		if(file.isDirectory()){
-			const srcPath = path.join(src,file.name)
-			const distPath = path.join(dist,file.name)
-			await copyFolder(srcPath,distPath)
-			continue;
-		}
-		const filePath = path.join(src,file.name)
-		const copyFilePath = path.join(dist,file.name)
-		await fs.copyFile(filePath,copyFilePath)
-	}
+  for (let file of files) {
+    if (file.isDirectory()) {
+      const srcPath = path.join(src, file.name);
+      const distPath = path.join(dist, file.name);
+      await copyFolder(srcPath, distPath);
+      continue;
+    }
+    const filePath = path.join(src, file.name);
+    const copyFilePath = path.join(dist, file.name);
+    await fs.copyFile(filePath, copyFilePath);
+  }
 }
 
+(async () => {
+  const src = path.join(__dirname, 'files');
+  const dist = path.join(__dirname, 'files-copy');
 
-
-
-(async () =>{
-	const src = path.join(__dirname,'files')
-	const dist = path.join(__dirname,'files-copy')
-
-	await copyFolder(src,dist);
-	console.log("Файлы скопированы")
-})()
+  await copyFolder(src, dist);
+  console.log('Файлы скопированы');
+})();
