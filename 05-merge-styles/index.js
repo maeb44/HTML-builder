@@ -27,5 +27,5 @@ async function copyStyles(extname) {
 }
 
 (async () => {
-  await copyStyles();
+  await copyStyles('.css');
 })();
