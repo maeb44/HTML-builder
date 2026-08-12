@@ -5,7 +5,8 @@
   "scripts": {
     "lint": "eslint .",
     "format": "prettier --write .",
-    "ci:format": "prettier --check ."
+    "ci:format": "prettier --check .",
+		"fix": "eslint . --fix"
   },
   "author": "evgeniimal",
   "license": "ISC",
